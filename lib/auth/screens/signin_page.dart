@@ -15,72 +15,130 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFD2C4A5),
-      appBar: AppBar(
-        backgroundColor: Colors.orange.shade700,
-        title: const Text(
-          "Existing User Login",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 40),
-
-            // Email Field
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: "Email",
-                border: OutlineInputBorder(),
+      body: Stack(
+        children: [
+          ///  Gradient Background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF2C2C54), Color(0xFF40407A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
+          ),
 
-            const SizedBox(height: 20),
-
-            // Phone Field
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(
-                labelText: "Phone",
-                border: OutlineInputBorder(),
+          ///  Background Image Overlay
+          Opacity(
+            opacity: 0.06,
+            child: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(
+                    "https://images.unsplash.com/photo-1518770660439-4636190af475",
+                  ),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
+          ),
 
-            const SizedBox(height: 40),
-
-            // Send OTP Button
-            InkWell(
-              onTap: () {
-                // TODO: Connect Bloc or API
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => OTPPage()),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 14,
-                  horizontal: 40,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade700,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  "Send OTP",
-                  style: TextStyle(
+          ///  Title at Top
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  "Existing User Login",
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-          ],
+          ),
+
+          ///  Center Card
+          Center(
+            child: SingleChildScrollView(
+              child: Container(
+                width: 400,
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.96),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 20,
+                      offset: Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _inputField(controller: emailController, label: "Email"),
+
+                    const SizedBox(height: 18),
+
+                    _inputField(controller: phoneController, label: "Phone"),
+
+                    const SizedBox(height: 32),
+
+                    /// Send OTP Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => OTPPage()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepOrange,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 4,
+                        ),
+                        child: const Text(
+                          "Send OTP",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  ///  Styled Input Field
+  Widget _inputField({
+    required TextEditingController controller,
+    required String label,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.grey.shade100,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
       ),
     );
