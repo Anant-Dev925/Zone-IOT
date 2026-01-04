@@ -1,49 +1,53 @@
-import 'package:iot/auth/services/resend_otp_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepository {
-  final ResendOtpService resendService = ResendOtpService();
+  final SupabaseClient _client = Supabase.instance.client;
 
-  /// SIGN UP
-  Future<(bool, String, dynamic)> signUp(
-    String name,
-    String surname,
-    String address,
-    String email,
-    String phone,
-  ) async {
-    try {
-      // TODO: Call actual signup endpoint
-      // final response = await resendService.sendOtp(email, phone);
+  // SIGN UP
 
-      return (true, "OTP sent", null);
-    } catch (e) {
-      return (false, e.toString(), null);
+  Future<void> signUpWithPassword({
+    required String email,
+    required String password,
+    required String name,
+    required String surname,
+    required String address,
+    required String phone,
+  }) async {
+    // Create auth user
+    final authResponse = await _client.auth.signUp(
+      email: email,
+      password: password,
+    );
+
+    final user = authResponse.user;
+    if (user == null) {
+      throw Exception("Signup failed: user not created");
     }
+
+    // Insert profile row
+    final profileResponse = await _client.from('profiles').insert({
+      'id': user.id,
+      'name': name,
+      'surname': surname,
+      'address': address,
+      'phone': phone,
+    });
   }
 
-  /// SIGN IN
-  Future<(bool, String, dynamic)> signIn(String email, String phone) async {
-    try {
-      // TODO: Call signin OTP endpoint
+  // SIGN IN
 
-      return (true, "OTP sent", null);
-    } catch (e) {
-      return (false, e.toString(), null);
-    }
+  Future<void> signInWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    await _client.auth.signInWithPassword(email: email, password: password);
   }
 
-  /// VERIFY OTP
-  Future<(bool, String, dynamic)> verifyOtp(
-    String email,
-    String phone,
-    String otp,
-  ) async {
-    try {
-      // TODO: Call verify OTP endpoint, return user
+  // SESSION HELPERS
 
-      return (true, "Verified", {"name": "Demo User"});
-    } catch (e) {
-      return (false, e.toString(), null);
-    }
+  User? get currentUser => _client.auth.currentUser;
+
+  Future<void> signOut() async {
+    await _client.auth.signOut();
   }
 }

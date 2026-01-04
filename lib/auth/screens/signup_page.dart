@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'otp_page.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -14,13 +15,25 @@ class _SignUpPageState extends State<SignUpPage> {
   final addressController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    surnameController.dispose();
+    addressController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          ///  Gradient Background
+          /// Gradient Background
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -31,7 +44,7 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
           ),
 
-          ///  Subtle Background Image
+          /// Subtle Background Image
           Opacity(
             opacity: 0.06,
             child: Container(
@@ -46,7 +59,7 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
           ),
 
-          ///  AppBar Overlay
+          /// AppBar Overlay
           SafeArea(
             child: Align(
               alignment: Alignment.topCenter,
@@ -64,7 +77,7 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
           ),
 
-          ///  Center Card
+          /// Center Card
           Center(
             child: SingleChildScrollView(
               child: Container(
@@ -114,6 +127,14 @@ class _SignUpPageState extends State<SignUpPage> {
 
                     const SizedBox(height: 18),
 
+                    _inputField(
+                      controller: passwordController,
+                      label: "Password",
+                      obscure: true,
+                    ),
+
+                    const SizedBox(height: 18),
+
                     _inputField(controller: phoneController, label: "Phone"),
 
                     const SizedBox(height: 32),
@@ -126,7 +147,17 @@ class _SignUpPageState extends State<SignUpPage> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => OTPPage()),
+                            MaterialPageRoute(
+                              builder: (_) => OTPPage(
+                                flowType: OTPFlowType.signup,
+                                name: nameController.text.trim(),
+                                surname: surnameController.text.trim(),
+                                address: addressController.text.trim(),
+                                email: emailController.text.trim(),
+                                phone: phoneController.text.trim(),
+                                password: passwordController.text.trim(),
+                              ),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -155,13 +186,15 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  ///  Styled Input Field
+  /// Styled Input Field
   Widget _inputField({
     required TextEditingController controller,
     required String label,
+    bool obscure = false,
   }) {
     return TextField(
       controller: controller,
+      obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
         filled: true,

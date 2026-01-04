@@ -1,56 +1,25 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:iot/auth/bloc/auth_event.dart';
-import 'package:iot/auth/bloc/auth_state.dart';
-import 'package:iot/auth/repository/auth_repository.dart';
+import 'auth_event.dart';
+import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final AuthRepository repository;
-
-  AuthBloc(this.repository) : super(AuthInitial()) {
-    // SIGN UP → send OTP
+  AuthBloc() : super(AuthInitial()) {
+    // SIGN UP → OTP screen (UI only)
     on<SignUpSubmitted>((event, emit) async {
       emit(AuthLoading());
-      final result = await repository.signUp(
-        event.name,
-        event.surname,
-        event.address,
-        event.email,
-        event.phone,
-      );
-
-      if (result.$1) {
-        emit(OtpSent());
-      } else {
-        emit(AuthError(result.$2));
-      }
+      emit(OtpSent());
     });
 
-    // SIGN IN → send OTP
+    // SIGN IN → OTP screen (UI only)
     on<SignInSubmitted>((event, emit) async {
       emit(AuthLoading());
-      final result = await repository.signIn(event.email, event.phone);
-
-      if (result.$1) {
-        emit(OtpSent());
-      } else {
-        emit(AuthError(result.$2));
-      }
+      emit(OtpSent());
     });
 
-    // VERIFY OTP → returns user data or error
+    // VERIFY OTP → success (UI only)
     on<VerifyOtp>((event, emit) async {
       emit(AuthLoading());
-      final result = await repository.verifyOtp(
-        event.email,
-        event.phone,
-        event.otp,
-      );
-
-      if (result.$1) {
-        emit(AuthSuccess(result.$3));
-      } else {
-        emit(AuthError(result.$2));
-      }
+      emit(AuthSuccess(null));
     });
 
     // RESET

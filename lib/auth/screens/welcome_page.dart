@@ -96,7 +96,7 @@ class WelcomePage extends StatelessWidget {
                             MaterialPageRoute(
                               builder: (_) => const HomeShell(),
                             ),
-                            (route) => false,
+                            (_) => false,
                           );
                         },
                       ),

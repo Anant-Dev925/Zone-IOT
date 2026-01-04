@@ -1,21 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:iot/auth/screens/welcome_page.dart';
+
 import '../../theme/app_theme.dart';
+import '../repository/auth_repository.dart';
+import 'welcome_page.dart';
+
+enum OTPFlowType { signup, signin }
 
 class OTPPage extends StatelessWidget {
-  const OTPPage({super.key});
+  final OTPFlowType flowType;
+
+  // signup-only fields
+  final String? name;
+  final String? surname;
+  final String? address;
+  final String? email;
+  final String? phone;
+  final String? password;
+
+  const OTPPage({
+    super.key,
+    required this.flowType,
+    this.name,
+    this.surname,
+    this.address,
+    this.email,
+    this.phone,
+    this.password,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          ///  Background Gradient
+          /// Background Gradient
           Container(
             decoration: const BoxDecoration(gradient: AppTheme.gradient),
           ),
 
-          ///  Subtle Background Image Overlay
+          /// Background Image
           Opacity(
             opacity: 0.06,
             child: Container(
@@ -30,7 +53,7 @@ class OTPPage extends StatelessWidget {
             ),
           ),
 
-          ///  Page Title
+          /// Title
           SafeArea(
             child: Align(
               alignment: Alignment.topCenter,
@@ -48,7 +71,7 @@ class OTPPage extends StatelessWidget {
             ),
           ),
 
-          ///  Center Card
+          /// Card
           Center(
             child: Container(
               width: 380,
@@ -74,7 +97,7 @@ class OTPPage extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  /// OTP Input (no validation)
+                  /// Fake OTP input
                   TextField(
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
@@ -90,7 +113,7 @@ class OTPPage extends StatelessWidget {
 
                   const SizedBox(height: 30),
 
-                  /// Continue Button → Dashboard
+                  /// Continue
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -102,14 +125,36 @@ class OTPPage extends StatelessWidget {
                         ),
                         elevation: 4,
                       ),
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const WelcomePage(),
-                          ),
-                          (route) => false,
-                        );
+                      onPressed: () async {
+                        try {
+                          final repo = AuthRepository();
+
+                          if (flowType == OTPFlowType.signup) {
+                            // REAL SIGNUP
+                            await repo.signUpWithPassword(
+                              email: email!,
+                              password: password!,
+                              name: name!,
+                              surname: surname!,
+                              address: address!,
+                              phone: phone!,
+                            );
+                          }
+
+                          // signin already done BEFORE OTP page
+
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const WelcomePage(),
+                            ),
+                            (_) => false,
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(e.toString())));
+                        }
                       },
                       child: const Text(
                         "Continue",

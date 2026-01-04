@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../repository/auth_repository.dart';
 import 'otp_page.dart';
 
 class SignInPage extends StatefulWidget {
@@ -10,14 +12,23 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   final emailController = TextEditingController();
-  final phoneController = TextEditingController();
+  final passwordController = TextEditingController();
+  final phoneController = TextEditingController(); // kept for OTP UI flow
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          ///  Gradient Background
+          /// Gradient Background
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -28,7 +39,7 @@ class _SignInPageState extends State<SignInPage> {
             ),
           ),
 
-          ///  Background Image Overlay
+          /// Background Image Overlay
           Opacity(
             opacity: 0.06,
             child: Container(
@@ -43,7 +54,7 @@ class _SignInPageState extends State<SignInPage> {
             ),
           ),
 
-          ///  Title at Top
+          /// Title
           SafeArea(
             child: Align(
               alignment: Alignment.topCenter,
@@ -61,7 +72,7 @@ class _SignInPageState extends State<SignInPage> {
             ),
           ),
 
-          ///  Center Card
+          /// Center Card
           Center(
             child: SingleChildScrollView(
               child: Container(
@@ -84,6 +95,14 @@ class _SignInPageState extends State<SignInPage> {
 
                     const SizedBox(height: 18),
 
+                    _inputField(
+                      controller: passwordController,
+                      label: "Password",
+                      obscure: true,
+                    ),
+
+                    const SizedBox(height: 18),
+
                     _inputField(controller: phoneController, label: "Phone"),
 
                     const SizedBox(height: 32),
@@ -93,11 +112,27 @@ class _SignInPageState extends State<SignInPage> {
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => OTPPage()),
-                          );
+                        onPressed: () async {
+                          try {
+                            final repo = AuthRepository();
+
+                            await repo.signInWithPassword(
+                              email: emailController.text.trim(),
+                              password: passwordController.text.trim(),
+                            );
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const OTPPage(flowType: OTPFlowType.signin),
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.toString())),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.deepOrange,
@@ -125,13 +160,15 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  ///  Styled Input Field
+  /// Styled Input Field
   Widget _inputField({
     required TextEditingController controller,
     required String label,
+    bool obscure = false,
   }) {
     return TextField(
       controller: controller,
+      obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
