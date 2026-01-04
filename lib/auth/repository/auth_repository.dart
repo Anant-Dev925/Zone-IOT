@@ -50,4 +50,25 @@ class AuthRepository {
   Future<void> signOut() async {
     await _client.auth.signOut();
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+
+    if (user == null || user.email == null) {
+      throw Exception("User not authenticated");
+    }
+
+    // Re-authenticate user (important)
+    await client.auth.signInWithPassword(
+      email: user.email!,
+      password: currentPassword,
+    );
+
+    // Update password
+    await client.auth.updateUser(UserAttributes(password: newPassword));
+  }
 }

@@ -8,9 +8,9 @@ import 'bloc/dashboard_state.dart';
 import '../../auth/repository/auth_repository.dart';
 import '../../auth/screens/opening_page.dart';
 
-import 'pages/devices_page.dart';
-import 'pages/profile_page.dart';
-import 'pages/wallet_page.dart';
+import 'devices/screens/devices_page.dart';
+import 'profile/screens/profile_page.dart';
+import 'wallet/screens/wallet_page.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});

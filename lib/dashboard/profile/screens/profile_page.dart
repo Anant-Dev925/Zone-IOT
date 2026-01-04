@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:iot/dashboard/profile/screens/change_password_page.dart';
+import 'package:iot/dashboard/profile/screens/edit_profile_page.dart';
 
-import '../../theme/app_theme.dart';
-import '../bloc/dashboard_bloc.dart';
-import '../bloc/dashboard_event.dart';
-import '../bloc/dashboard_state.dart';
+import '../../../theme/app_theme.dart';
+import '../../bloc/dashboard_bloc.dart';
+import '../../bloc/dashboard_event.dart';
+import '../../bloc/dashboard_state.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -128,21 +130,37 @@ class ProfilePage extends StatelessWidget {
                     _actionTile(
                       icon: Icons.edit,
                       title: "Edit Profile",
-                      onTap: () {},
+                      onTap: () async {
+                        final updated = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditProfilePage(profile: profile),
+                          ),
+                        );
+                        if (updated == true) {
+                          context.read<DashboardBloc>().add(DashboardStarted());
+                        }
+                      },
                     ),
 
                     _actionTile(
                       icon: Icons.lock,
                       title: "Change Password",
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ChangePasswordPage(),
+                          ),
+                        );
+                      },
                     ),
 
-                    _actionTile(
-                      icon: Icons.notifications,
-                      title: "Notification Settings",
-                      onTap: () {},
-                    ),
-
+                    // _actionTile(
+                    //   icon: Icons.notifications,
+                    //   title: "Notification Settings",
+                    //   onTap: () {},
+                    // ),
                     const SizedBox(height: 30),
 
                     /// -------------------------
@@ -161,7 +179,7 @@ class ProfilePage extends StatelessWidget {
                         icon: const Icon(Icons.logout),
                         label: const Text(
                           "Logout",
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                         onPressed: () {
                           context.read<DashboardBloc>().add(
