@@ -1,22 +1,56 @@
 import 'package:flutter/material.dart';
 import '../widgets/device_container_tile.dart';
+import '../repository/device_repository.dart';
 import 'device_details_page.dart';
+import 'add_device_page.dart';
 
-class DevicesPage extends StatelessWidget {
+class DevicesPage extends StatefulWidget {
   const DevicesPage({super.key});
 
-  final devices = const [
-    ("Device 1", 60),
-    ("Device 2", 40),
-    ("Device 3", 75),
-    ("Device 4", 20),
-    ("Device 5", 55),
-  ];
+  @override
+  State<DevicesPage> createState() => _DevicesPageState();
+}
+
+class _DevicesPageState extends State<DevicesPage> {
+  final DeviceRepository _repo = DeviceRepository();
+
+  bool _loading = true;
+  String? _error;
+  List<Map<String, dynamic>> _devices = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDevices();
+  }
+
+  Future<void> _loadDevices() async {
+    try {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+
+      final data = await _repo.getDevices();
+
+      if (mounted) {
+        setState(() {
+          _devices = data;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController deviceIdController = TextEditingController();
-
     return SafeArea(
       child: Column(
         children: [
@@ -29,162 +63,98 @@ class DevicesPage extends StatelessWidget {
           ),
 
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.65,
-              ),
-              itemCount: devices.length + 1,
-              itemBuilder: (context, index) {
-                /// -------------------------
-                /// ADD NEW DEVICE TILE
-                /// -------------------------
-                if (index == devices.length) {
-                  return GestureDetector(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            insetPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "Add New Device",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                ? Center(child: Text(_error!))
+                : GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: 0.65,
+                        ),
+                    itemCount: _devices.length + 1,
+                    itemBuilder: (context, index) {
+                      // ADD DEVICE TILE
 
-                                  const SizedBox(height: 16),
+                      if (index == _devices.length) {
+                        return _buildAddDeviceTile(context);
+                      }
 
-                                  TextField(
-                                    controller: deviceIdController,
-                                    decoration: const InputDecoration(
-                                      labelText: "Enter Device ID",
-                                      border: OutlineInputBorder(),
-                                    ),
-                                  ),
+                      // DEVICE TILE
 
-                                  const SizedBox(height: 24),
+                      final device = _devices[index];
 
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: OutlinedButton(
-                                          onPressed: () {
-                                            deviceIdController.clear();
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text("Cancel"),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            final deviceId = deviceIdController
-                                                .text
-                                                .trim();
-
-                                            deviceIdController.clear();
-                                            Navigator.pop(context);
-
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  "Device ID $deviceId added (mock)",
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          child: const Text("OK"),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                      return DeviceContainerTile(
+                        deviceName: device['device_name'],
+                        levelPercent: device['level_percent'] ?? 0,
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  DeviceDetailsPage(deviceId: device['id']),
                             ),
                           );
+
+                          // Refresh after edit / delete
+                          _loadDevices();
                         },
                       );
                     },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.black26, width: 1.5),
-                        boxShadow: const [
-                          BoxShadow(
-                            blurRadius: 6,
-                            color: Colors.black12,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.add_circle_outline,
-                            size: 56,
-                            color: Colors.black54,
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            "Add New Device",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                /// -------------------------
-                /// NORMAL DEVICE TILE
-                /// -------------------------
-                final device = devices[index];
-                return DeviceContainerTile(
-                  deviceName: device.$1,
-                  levelPercent: device.$2,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DeviceDetailsPage(
-                          deviceName: device.$1,
-                          levelPercent: device.$2,
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                  ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ADD DEVICE TILE
+
+  Widget _buildAddDeviceTile(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddDevicePage()),
+        );
+
+        if (result == true) {
+          _loadDevices();
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.black26, width: 1.5),
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 6,
+              color: Colors.black12,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.add_circle_outline, size: 56, color: Colors.black54),
+            SizedBox(height: 12),
+            Text(
+              "Add New Device",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black54,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

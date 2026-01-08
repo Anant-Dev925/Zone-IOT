@@ -14,6 +14,10 @@ class DeviceContainerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final clampedLevel = levelPercent.clamp(0, 100);
+    final fillFactor = clampedLevel / 100;
+    final bool isFull = clampedLevel == 100;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -36,22 +40,35 @@ class DeviceContainerTile extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
+                  // Outer container
                   Container(
                     width: 90,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.black54, width: 2),
+                      color: Colors.white,
                     ),
                   ),
 
-                  AnimatedContainer(
+                  // Water fill
+                  AnimatedFractionallySizedBox(
                     duration: const Duration(milliseconds: 400),
-                    width: 90,
-                    height: (levelPercent / 100) * 160,
-                    decoration: const BoxDecoration(
-                      color: Colors.blueAccent,
-                      borderRadius: BorderRadius.vertical(
-                        bottom: Radius.circular(10),
+                    heightFactor: fillFactor,
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      width: 90,
+                      decoration: BoxDecoration(
+                        color: Colors.blueAccent,
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: const Radius.circular(10),
+                          bottomRight: const Radius.circular(10),
+                          topLeft: isFull
+                              ? const Radius.circular(10)
+                              : Radius.zero,
+                          topRight: isFull
+                              ? const Radius.circular(10)
+                              : Radius.zero,
+                        ),
                       ),
                     ),
                   ),
